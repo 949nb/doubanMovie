@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+  <meta charset="utf-8">
+  <meta name="referrer" content="never">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>豆瓣电影2222</title>
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1107785_dne24b2gow7.css">
+  <link rel="stylesheet" href="./1.css">
+</head>
+<body>
+<main>
+    <section>
+      <div id="top250">
+        <div class="container">
+          </div>
+        <div class='loading' ><span class="iconfont icon-loading"></span></div>
+      </div>
+      
+    </section>
+    <section><div id="usBox">
+        <div class="container">
+          </div>
+        <div class='loading' ><span class="iconfont icon-loading"></span></div>
+      </div></section>
+  
+    <section>
+      <div id="search">
+        <div class="search-area">
+          <input type="text" placeholder='搜索电影'>
+          <button>搜索</button>
+        </div>
+        <div class="search-result">
+          <div class="container"></div>
+          <div class='loading' ><span class="iconfont icon-loading"></span>
+        </div>
+      </div>
+    </div>
+    </section>
+  </main>
+  <footer>
+    <div class='active'>
+      <span class="iconfont icon-top250"></span>
+      <span>Top250</span>
+    </div>
+    <div>
+      <span class="iconfont icon-us"></span>
+      <span>北美</span>
+    </div>
+    <div>
+      <span class="iconfont icon-search"></span>
+      <span>搜索</span>
+    </div>
+  </footer>
+  
+  <script>
+    
+    
+    //构建一个top250对象，里面有一些属性。是top250页面的模块
+  var top250 = {
+      init:function(){//初始化项目，只要执行了初始化，这个模块就可以跑起来了
+        this.$element = $('#top250')
+        this.isLoading = false
+        this.index = 0
+        
+        
+        this.bind()
+        this.start()
+      },
+      bind:function(){//绑定事件
+        var _this = this
+        this.$element.scroll(function(){
+          console.log(_this.isToBottom())
+          if(_this.isToBottom()){_this.start()}
+          
+        })
+      },
+      start:function(){//开始执行这个模块中的东西
+        var _this = this
+        this.getData(function(data){
+          _this.render(data)
+        })
+      },
+      getData:function(callback){//获取数据
+        let _this = this
+        if(_this.isLoading) return
+        _this.$element.find('.loading').fadeIn()
+        $.ajax({
+          url: '//api.douban.com/v2/movie/top250',
+          type: 'get',
+          data:{
+            start: _this.index,
+            count: 20
+          },
+          dataType:'jsonp'
+        }).done(function(ret){
+          _this.index += 20
+          callback(ret)
+        }).fail(function(){
+          console.log('失败')
+        }).always(function(){
+          _this.isLoading = false
+          _this.$element.find('.loading').fadeOut()
+        })
+      },
+      render:function(data){//渲染数据
+        this.tpl = `<div class="item">
+        <a href="#">
+          <div class="cover">
+            <img src="#" alt="剧照">
+          </div>
+          <div class="detail">
+            <h2>霸王别姬</h2>
+            <div class="extra"><span class='score'>9.3分</span> / <span class='collect'>1000</span>收藏</div>
+            <div class="extra"><span class='year'>1994</span> / <span class='type'>剧情、爱情</span></div>
+            <div class="extra">导演： <span class='directors'>张艺谋</span></div>
+            <div class="extra">主演： <span class='casts'>张翼膜、张果肉、张搜索</span></div>
+          </div>
+        </a>
+      </div>`
+        var _this = this
+        var tpl = this.tpl
+        data.subjects.forEach(function(movie){
+          var $node = $(tpl)
+          $node.find('.cover img').attr('src',movie.images.medium)
+          $node.find('.detail h2').text(movie.title);
+          $node.find('.score').text(movie.rating.average);
+          $node.find('.collect').text(movie.collect_count);
+          $node.find('.year').text(movie.year);
+          $node.find('.type').text(movie.genres.join('-'));
+          $node.find('.directors').text(movie.directors[0].name);
+          $node.find('.casts').text(function(){
+            var castsArr = [];
+            movie.casts.forEach((item)=>{
+              castsArr.push(item.name)
+            });
+            return castsArr.join('、')
+          });
+          _this.$element.find('.container').append($node)
+        })
+       },
+      isToBottom:function(){
+      if(this.$element.find('.container').height() == this.$element.height() + this.$element.scrollTop()){return true}else{return false}
+      }
+    }
+      
+    
+    var usBox = {
+      init:function(){
+        this.$element = $('#usBox')
+        this.isLoading = false
+        this.index = 0;
+        this.start()
+      },
+      start:function(){//开始执行这个模块中的东西
+        var _this = this
+        this.getData(function(data){
+          _this.render(data)
+        })
+      },
+      getData:function(callback){//获取数据
+        let _this = this
+        if(_this.isLoading) return
+        _this.$element.find('.loading').fadeIn()
+        $.ajax({
+          url: '//api.douban.com/v2/movie/us_box',
+          type: 'get',
+          data:{
+            start: _this.index,
+            count: 10
+          },
+          dataType:'jsonp'
+        }).done(function(ret){
+          _this.index += 10
+          callback(ret)
+        }).fail(function(){
+          console.log('失败')
+        }).always(function(){
+          _this.isLoading = false
+          _this.$element.find('.loading').fadeOut()
+        })
+      },
+      render:function(data){//渲染数据
+        this.tpl = `<div class="item">
+        <a href="#">
+          <div class="cover">
+            <img src="#" alt="剧照">
+          </div>
+          <div class="detail">
+            <h2>霸王别姬</h2>
+            <div class="extra"><span class='score'>9.3分</span> / <span class='collect'>1000</span>收藏</div>
+            <div class="extra"><span class='year'>1994</span> / <span class='type'>剧情、爱情</span></div>
+            <div class="extra">导演： <span class='directors'>张艺谋</span></div>
+            <div class="extra">主演： <span class='casts'>张翼膜、张果肉、张搜索</span></div>
+          </div>
+        </a>
+      </div>`
+        var _this = this
+        var tpl = this.tpl
+        data.subjects.forEach(function(movie){
+          var movie = movie.subject
+          var $node = $(tpl)
+          $node.find('.cover img').attr('src',movie.images.medium)
+          $node.find('.detail h2').text(movie.title);
+          $node.find('.score').text(movie.rating.average);
+          $node.find('.collect').text(movie.collect_count);
+          $node.find('.year').text(movie.year);
+          $node.find('.type').text(movie.genres.join('-'));
+          $node.find('.directors').text(function(){
+            var castsArr = [];
+            movie.directors.forEach((item)=>{
+              castsArr.push(item.name)
+            });
+            return castsArr.join('、')
+          });
+          
+          $node.find('.casts').text(function(){
+            var castsArr = [];
+            movie.casts.forEach((item)=>{
+              castsArr.push(item.name)
+            });
+            return castsArr.join('、')
+          });
+          _this.$element.find('.container').append($node)
+        })
+       },
+      isToBottom:function(){
+      if(this.$element.find('.container').height() == this.$element.height() + this.$element.scrollTop()){return true}else{return false}
+      }
+    }
+    
+    var search = {
+      init:function(){
+        this.$element = $('.search')
+        this.isLoading = false
+        this.index = 0
+        this.where = $element.find('input').val()
+        
+        this.bind()
+        this.start()
+      },
+      bind:function(){//绑定事件
+        var _this = this
+        this.$element.scroll(function(){
+          console.log(_this.isToBottom())
+          if(_this.isToBottom()){_this.start()}
+        })
+      },
+      start:function(){//开始执行这个模块中的东西
+        var _this = this
+        this.getData(function(data){
+          _this.render(data)
+        })
+      },
+      getData:function(callback){//获取数据
+        let _this = this
+        if(_this.isLoading) return
+        _this.$element.find('.loading').fadeIn()
+        $.ajax({
+          url: 'http://api.douban.com/v2/movie/search',
+          data:{
+            q: _this.where
+          },
+          dataType:'jsonp'
+        }).done(function(ret){
+          _this.index += 20
+          callback(ret)
+        }).fail(function(){
+          console.log('失败')
+        }).always(function(){
+          _this.isLoading = false
+          _this.$element.find('.loading').fadeOut()
+        })
+      },
+      render:function(data){//渲染数据
+        this.tpl = `<div class="item">
+        <a href="#">
+          <div class="cover">
+            <img src="#" alt="剧照">
+          </div>
+          <div class="detail">
+            <h2>霸王别姬</h2>
+            <div class="extra"><span class='score'>9.3分</span> / <span class='collect'>1000</span>收藏</div>
+            <div class="extra"><span class='year'>1994</span> / <span class='type'>剧情、爱情</span></div>
+            <div class="extra">导演： <span class='directors'>张艺谋</span></div>
+            <div class="extra">主演： <span class='casts'>张翼膜、张果肉、张搜索</span></div>
+          </div>
+        </a>
+      </div>`
+        var _this = this
+        var tpl = this.tpl
+        data.subjects.forEach(function(movie){
+          var $node = $(tpl)
+          $node.find('.cover img').attr('src',movie.images.medium)
+          $node.find('.detail h2').text(movie.title);
+          $node.find('.score').text(movie.rating.average);
+          $node.find('.collect').text(movie.collect_count);
+          $node.find('.year').text(movie.year);
+          $node.find('.type').text(movie.genres.join('-'));
+          $node.find('.directors').text(movie.directors[0].name);
+          $node.find('.casts').text(function(){
+            var castsArr = [];
+            movie.casts.forEach((item)=>{
+              castsArr.push(item.name)
+            });
+            return castsArr.join('、')
+          });
+          _this.$element.find('.container').append($node)
+        })
+       },
+      isToBottom:function(){
+      if(this.$element.find('.container').height() == this.$element.height() + this.$element.scrollTop()){return true}else{return false}
+      }
+    }
+    
+    
+    var app = {
+      init: function(){
+        this.$tabs = $('footer div')
+        this.$panels = $('section')
+        this.bind()
+        
+        top250.init()
+        usBox.init()
+        search.init()
+      },
+      
+      bind: function(){
+        var _this = this
+        this.$tabs.on('click',function(){
+          $(this).addClass('active').siblings().removeClass('active')
+          _this.$panels.eq($(this).index()).fadeIn().siblings().hide()
+        })
+      }
+      
+    }
+    
+    app.init()
+    
+  </script>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+</body>
+</html>

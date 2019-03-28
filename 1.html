@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
   <meta charset="utf-8">
   <meta name="referrer" content="never">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,7 +28,7 @@
       <div id="search">
         <div class="search-area">
           <input type="text" placeholder='搜索电影'>
-          <button>搜索</button>
+          <button class="button">搜索</button>
         </div>
         <div class="search-result">
           <div class="container"></div>
@@ -53,6 +52,9 @@
       <span>搜索</span>
     </div>
   </footer>
+
+
+  <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
   
   <script>
     
@@ -232,16 +234,21 @@
     
     var search = {
       init:function(){
-        this.$element = $('.search')
+        this.$element = $('#search')
         this.isLoading = false
         this.index = 0
-        this.where = $element.find('input').val()
+        
+        console.log(this.button)
         
         this.bind()
         this.start()
       },
       bind:function(){//绑定事件
         var _this = this
+        this.$element.find('.search-area .button').on('click',function(){
+          console.log('click')
+          _this.start()
+        })
         this.$element.scroll(function(){
           console.log(_this.isToBottom())
           if(_this.isToBottom()){_this.start()}
@@ -255,12 +262,13 @@
       },
       getData:function(callback){//获取数据
         let _this = this
+        this.keyword = this.$element.find('input').val()
         if(_this.isLoading) return
         _this.$element.find('.loading').fadeIn()
         $.ajax({
           url: 'http://api.douban.com/v2/movie/search',
           data:{
-            q: _this.where
+            q: _this.keyword
           },
           dataType:'jsonp'
         }).done(function(ret){
@@ -340,21 +348,5 @@
     
   </script>
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
 </body>
 </html>
